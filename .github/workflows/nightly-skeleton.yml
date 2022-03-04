@@ -1,0 +1,57 @@
+name: Nightly skeleton workflow
+
+on:
+  workflow_dispatch:
+
+concurrency: keycloak-release
+
+jobs:
+
+  keycloak-nodejs-admin:
+    name: Keycloak Node.js Admin
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Hello Node.js Admin
+      run: |
+        echo "Hello from Node.js Admin release"
+
+  keycloak-admin-ui:
+    name: Keycloak Admin UI
+    runs-on: ubuntu-latest
+    needs: [keycloak-nodejs-admin]
+
+    steps:
+    - name: Hello Admin UI
+      run: |
+        echo "Hello from Admin UI release"
+        
+  keycloak:
+    name: Keycloak
+    runs-on: ubuntu-latest
+    needs: [keycloak-admin-ui]
+
+    steps:
+    - name: Hello Keycloak
+      run: |
+        echo "Hello from Keycloak release"
+          
+  keycloak-container:
+    name: Keycloak Container
+    runs-on: ubuntu-latest
+    needs: [keycloak]
+
+    steps:
+    - name: Hello Container
+      run: |
+        echo "Hello from Container release"
+          
+  keycloak-operator:
+    name: Keycloak Operator
+    runs-on: ubuntu-latest
+    needs: [keycloak]
+
+    steps:
+    - name: Hello Operator
+      run: |
+        echo "Hello from Operator release"

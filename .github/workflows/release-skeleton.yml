@@ -1,0 +1,116 @@
+name: Release skeleton workflow
+
+on:
+  workflow_dispatch:
+
+concurrency: keycloak-release
+
+jobs:
+
+  keycloak-nodejs-admin:
+    name: Keycloak Node.js Admin
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Hello Node.js Admin
+      run: |
+        echo "Hello from Node.js Admin release"
+
+  keycloak-admin-ui:
+    name: Keycloak Admin UI
+    runs-on: ubuntu-latest
+    needs: [keycloak-nodejs-admin]
+
+    steps:
+    - name: Hello Admin UI
+      run: |
+        echo "Hello from Admin UI release"
+        
+  keycloak:
+    name: Keycloak
+    runs-on: ubuntu-latest
+    needs: [keycloak-admin-ui]
+
+    steps:
+    - name: Hello Keycloak
+      run: |
+        echo "Hello from Keycloak release"
+          
+  keycloak-container:
+    name: Keycloak Container
+    runs-on: ubuntu-latest
+    needs: [keycloak]
+
+    steps:
+    - name: Hello Container
+      run: |
+        echo "Hello from Container release"
+          
+  keycloak-operator:
+    name: Keycloak Operator
+    runs-on: ubuntu-latest
+    needs: [keycloak]
+
+    steps:
+    - name: Hello Operator
+      run: |
+        echo "Hello from Operator release"
+
+  keycloak-quickstarts:
+    name: Keycloak QuickStarts
+    runs-on: ubuntu-latest
+    needs: [keycloak]
+
+    steps:
+    - name: Hello QuickStarts
+      run: |
+        echo "Hello from QuickStarts release"
+
+  keycloak-documentation:
+    name: Keycloak Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Hello Documentation
+      run: |
+        echo "Hello from Documentation release"
+
+  keycloak-nodejs-connect:
+    name: Keycloak Node.js Connect
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Hello Node.js Connect
+      run: |
+        echo "Hello from Node.js Connect release"
+
+  keycloak-legacy-container:
+    name: Keycloak Legacy Container
+    runs-on: ubuntu-latest
+    needs: [keycloak]
+
+    steps:
+    - name: Hello Legacy Container
+      run: |
+        echo "Hello from Legacy Container release"
+
+  keycloak-legacy-operator:
+    name: Keycloak Legacy Operator
+    runs-on: ubuntu-latest
+    needs: [keycloak-legacy-container]
+
+    steps:
+    - name: Hello Legacy Operator
+      run: |
+        echo "Hello from Legacy Operator release"
+
+  keycloak-web:
+    name: Keycloak Web
+    runs-on: ubuntu-latest
+    needs: [keycloak, keycloak-container, keycloak-operator, keycloak-documentation, keycloak-nodejs-connect, keycloak-quickstarts]
+
+    steps:
+    - name: Hello Web
+      run: |
+        echo "Hello from Web release"
+
