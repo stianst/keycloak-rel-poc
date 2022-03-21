@@ -5,8 +5,11 @@ on:
 
 concurrency: keycloak-release
 
+env:
+  KEYCLOAK_REPOSITORY: 'stianst/keycloak'
+
 jobs:
-  keycloak:
+  keycloak-release:
     name: Keycloak
     runs-on: ubuntu-latest
 
@@ -14,7 +17,7 @@ jobs:
     - name: Setup Java
       uses: actions/setup-java@v2
       with:
-        distribution: 'zulu'
+        distribution: 'zulu' # ???
         java-version: 11
         server-id: jboss-snapshots-repository
         server-username: MAVEN_USERNAME
@@ -22,49 +25,51 @@ jobs:
         gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
+    - name: Cache Maven packages
+      id: cache
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2/repository
+        key: cache-${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: cache-${{ runner.os }}-m2
+
     - name: Checkout Keycloak repository
       uses: actions/checkout@v3
       with:
-        repository: 'stianst/keycloak'
+        repository: ${{ env.KEYCLOAK_REPOSITORY }}
         token: ${{ secrets.GH_TOKEN }}
         path: keycloak
-        
-    - name: Update nightly tag
-      run: |
-        git tag -f nightly
-        git push origin nightly --force
+
+    - name: Calculate version
+      id: version
       working-directory: ./keycloak
+      run: |
+        export VERSION=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+        echo "::set-output name=version::$VERSION"
+
+    - name: Check version
+      run: |
+        echo "Version: ${{steps.version.outputs.version}}"
         
     - name: Deploy Keycloak
       env:
         MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-        MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}        
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       working-directory: ./keycloak
       run: mvn -nsu -B -Pgpg,jboss-release,nexus-staging,distribution-downloads -DskipTests -DskipTestsuite -DretryFailedDeploymentCount=10 -DautoReleaseAfterClose=true clean deploy
 
     - name: Upload Keycloak release
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      run: |
-        gh release list -R stianst/keycloak | grep ^nightly >/dev/null && gh release delete -R stianst/keycloak nightly -y
-        gh release create -R stianst/keycloak -p --target main --title nightly --notes "Nightly" nightly
-        gh release upload -R stianst/keycloak nightly ./distribution/downloads/target/18.0.0-SNAPSHOT/*
       working-directory: ./keycloak
-      
-  keycloak-container:
-    name: Keycloak Container
-    runs-on: ubuntu-latest
-    needs: [keycloak]
-
-    steps:
-    - name: Checkout Keycloak repository
-      uses: actions/checkout@v3
-      with:
-        repository: 'stianst/keycloak'
-        token: ${{ secrets.GH_TOKEN }}
-        path: keycloak
+      run: |
+        gh release list -R ${{ env.KEYCLOAK_REPOSITORY }} | grep ^nightly >/dev/null && gh release delete -R ${{ env.KEYCLOAK_REPOSITORY }} nightly -y
+        gh release create -R ${{ env.KEYCLOAK_REPOSITORY }} -p --target main --title nightly --notes "Nightly" nightly
+        gh release upload -R ${{ env.KEYCLOAK_REPOSITORY }} nightly ./distribution/downloads/target/${{steps.version.outputs.version}}/*
         
+    # Release the container
     - name: Setup QEMU
       uses: docker/setup-qemu-action@v1
       
@@ -75,7 +80,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v3
       with:
-        images: quay.io/stianst/keycloak
+        images: quay.io/${{ env.KEYCLOAK_REPOSITORY }}
         tags: |
           type=raw,value=nightly
           
@@ -86,11 +91,12 @@ jobs:
         username: ${{ secrets.QUAY_USERNAME }}
         password: ${{ secrets.QUAY_TOKEN }}
         
-    - name: Download Keycloak
+    - name: Copy Keycloak package
       env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}    
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      working-directory: ./keycloak
       run: |
-        gh release download -R stianst/keycloak -p keycloak-18.0.0-SNAPSHOT.tar.gz -D ./keycloak/quarkus/container nightly
+        cp ./distribution/downloads/target/${{steps.version.outputs.version}}/keycloak-${{steps.version.outputs.version}}.tar.gz ./quarkus/container
 
     - name: Build and push
       uses: docker/build-push-action@v2
@@ -100,4 +106,10 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        build-args: KEYCLOAK_DIST=keycloak-18.0.0-SNAPSHOT.tar.gz
+        build-args: KEYCLOAK_DIST=keycloak-${{steps.version.outputs.version}}.tar.gz
+
+    - name: Update nightly tag
+      working-directory: ./keycloak
+      run: |
+        git tag -f nightly | true
+        git push origin nightly --force
