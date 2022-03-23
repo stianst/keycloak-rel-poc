@@ -12,7 +12,8 @@ jobs:
 
     steps:
     - name: Setup Java
-      uses: actions/setup-java@v2
+      # actions/setup-java@v3.0.0
+      uses: actions/setup-java@f69f00b5e5324696b07f6b1c92f0470a6df00780
       with:
         distribution: 'temurin'
         java-version: 11
@@ -23,7 +24,8 @@ jobs:
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
     - name: Checkout Keycloak repository
-      uses: actions/checkout@v3
+      # actions/checkout@v3.0.0
+      uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846
       with:
         repository: 'stianst/keycloak'
         token: ${{ secrets.GH_TOKEN }}
@@ -59,28 +61,33 @@ jobs:
 
     steps:
     - name: Checkout Keycloak repository
-      uses: actions/checkout@v3
+      # actions/checkout@v3.0.0
+      uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846
       with:
         repository: 'stianst/keycloak'
         token: ${{ secrets.GH_TOKEN }}
         path: keycloak
         
     - name: Setup QEMU
-      uses: docker/setup-qemu-action@v1
+      # docker/setup-qemu-action@v1.2.0
+      uses: docker/setup-qemu-action@27d0a4f181a40b142cce983c5393082c365d1480
       
     - name: Setup Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      # docker/setup-buildx-action@v1.6.0
+      uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25
       
     - name: Container metadata
       id: meta
-      uses: docker/metadata-action@v3
+      # docker/metadata-action@v3.6.2
+      uses: docker/metadata-action@e5622373a38e60fb6d795a4421e56882f2d7a681
       with:
         images: quay.io/stianst/keycloak
         tags: |
           type=raw,value=nightly
           
     - name: Login to Quay
-      uses: docker/login-action@v1
+      # docker/login-action@v1.14.1
+      uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7
       with:
         registry: quay.io
         username: ${{ secrets.QUAY_USERNAME }}
@@ -93,7 +100,8 @@ jobs:
         gh release download -R stianst/keycloak -p keycloak-18.0.0-SNAPSHOT.tar.gz -D ./keycloak/quarkus/container nightly
 
     - name: Build and push
-      uses: docker/build-push-action@v2
+      # docker/build-push-action@v2.10.0
+      uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
       with:
         context: keycloak/quarkus/container
         platforms: linux/amd64,linux/arm64
