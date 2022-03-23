@@ -14,7 +14,7 @@ jobs:
     - name: Setup Java
       uses: actions/setup-java@v2
       with:
-        distribution: 'zulu'
+        distribution: 'temurin'
         java-version: 11
         server-id: jboss-snapshots-repository
         server-username: MAVEN_USERNAME
