@@ -68,7 +68,7 @@ jobs:
         
     - name: Download Keycloak Admin UI
       run: |
-        mvn org.apache.maven.plugins:maven-dependency-plugin:2.1:get -DrepoUrl=https://s01.oss.sonatype.org/content/repositories/snapshots/ -Dartifact=org.keycloak:keycloak-core:999-SNAPSHOT
+        mvn org.apache.maven.plugins:maven-dependency-plugin:2.1:get -DrepoUrl=https://s01.oss.sonatype.org/content/repositories/snapshots/ -Dartifact=org.keycloak:keycloak-admin-ui:999-SNAPSHOT
       working-directory: ./keycloak
         
     - name: Update nightly tag
