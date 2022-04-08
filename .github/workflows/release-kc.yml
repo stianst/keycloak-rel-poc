@@ -21,6 +21,6 @@ jobs:
     steps:
       - name: Run a one-line script
         run: |
-          echo "${{ inputs.branch }}"
-          echo "${{ inputs.tag }}"
+          echo "Branch: ${{ inputs.branch }}"
+          echo "Tag: ${{ inputs.tag }}"
 
