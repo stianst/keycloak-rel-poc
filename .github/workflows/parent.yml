@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  
+env:
+  BRANCH: main
+  TAG: nightly
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  
+  kc:
+    uses: stianst/keycloak-rel-poc/.github/workflows/release-kc.yml@main
+    with:
+      branch: $BRANCH
+      tag: $TAG
