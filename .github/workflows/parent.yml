@@ -13,5 +13,5 @@ jobs:
   kc:
     uses: stianst/keycloak-rel-poc/.github/workflows/release-kc.yml@main
     with:
-      branch: $BRANCH
-      tag: $TAG
+      branch: ${{ env.BRANCH }}
+      tag: ${{ env.TAG }}
