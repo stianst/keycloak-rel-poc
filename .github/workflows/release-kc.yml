@@ -1,0 +1,26 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Test
+
+# Controls when the workflow will run
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
+      
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run a one-line script
+        run: |
+          echo "${{ inputs.branch }}"
+          echo "${{ inputs.tag }}"
+
